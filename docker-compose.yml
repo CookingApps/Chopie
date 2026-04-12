@@ -1,0 +1,31 @@
+version: "3.8"
+
+services:
+  # Database service
+  database:
+    image: postgres:alpine
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: my_database
+    ports:
+      - "5432:5432" # Default Postgres port
+
+  # Cache service
+  cache:
+    image: redis:alpine
+    container_name: redis_cache
+    restart: always
+    ports:
+      - "6379:6379" # Default Redis port
+
+  # Message broker for background tasks
+  broker:
+    image: rabbitmq:management-alpine
+    container_name: rabbitmq_broker
+    restart: always
+    ports:
+      - "5672:5672" # AMQP protocol port
+      - "15672:15672" # Management UI port
