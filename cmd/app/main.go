@@ -2,6 +2,7 @@ package main
 
 import (
 	"Chopie/internal/config"
+	"Chopie/internal/model"
 	"Chopie/internal/repository"
 	"fmt"
 	"net/http"
@@ -12,12 +13,17 @@ import (
 func main() {
 
 	cfg, err := config.LoadConfig()
-
-	db := repository.InitDB(cfg)
-	fmt.Print(db, "Omo")
-
 	if err != nil {
 		panic(err)
+
+	}
+
+	db := repository.InitDB(cfg)
+	ut := db.AutoMigrate(&model.User{})
+	fmt.Print(ut)
+
+	if ut != nil {
+		panic(ut)
 	}
 	Router := gin.Default()
 	Router.GET("/health", func(ctx *gin.Context) {
