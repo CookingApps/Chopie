@@ -24,6 +24,7 @@ func (a *AuthService) Register(email string, password string) (err error) {
 		user = &model.User{
 			Email:    email,
 			Password: hashedPwd,
+			// F
 		}
 
 		err = a.userRepo.Create(user)
