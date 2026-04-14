@@ -2,9 +2,10 @@ package main
 
 import (
 	"Chopie/internal/config"
+	"Chopie/internal/handler"
 	"Chopie/internal/model"
 	"Chopie/internal/repository"
-	"fmt"
+	"Chopie/internal/service"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -20,10 +21,14 @@ func main() {
 
 	db := repository.InitDB(cfg)
 	ut := db.AutoMigrate(&model.User{})
-	fmt.Print(ut)
+
+	authRepo := repository.NewUserRepository(db)
+	authService := service.NewAuthService(authRepo)
+	authHandle := handler.NewAuthHandler(*authService)
 
 	if ut != nil {
 		panic(ut)
+
 	}
 	Router := gin.Default()
 	Router.GET("/health", func(ctx *gin.Context) {
@@ -31,5 +36,6 @@ func main() {
 			"status": "ok",
 		})
 	})
+	Router.POST("/Register", authHandle.CreateUser)
 	Router.Run(":" + cfg.Port)
 }
