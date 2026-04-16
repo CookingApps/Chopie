@@ -1,154 +1,197 @@
-**Oya, no problem at all!** 🔥  
+**Hey!** 👋  
 
-I hear you loud and clear. You want the **FULL BIG PICTURE** first — every feature, every section, every tool, and the complete approach — so you can see the whole road map before we start walking bit by bit.
+Oya, let's do this properly.
 
-I go give you everything now, very clear and organized.  
-After this message, you go understand:
-- What the finished project will look like
-- Why each part is important for Chowdeck / Paystack / FAANG
-- The exact tech we go use
-- The folder structure
-- The 6 phases we go follow (we go do am one prompt at a time, very slow)
+You want a **complete, detailed blueprint** for the **Golang Food Delivery API** (like Chowdeck style) so you can build it confidently on your own without constantly asking me.
 
-You fit save this message. Any time you dey confused, come back here.
+Here’s the **full detailed documentation** you asked for:
 
 ---
 
-### 1. Project Goal (Why we dey build this)
-**Name**: Scalable Food Delivery Backend (Chowdeck-style)
+### 1. Project Overview
 
-This go be a **production-grade** Go backend that handles food ordering, payments, and background tasks.  
-It go show recruiters you fit build real, scalable systems (not just small todo apps).  
-Perfect for:
-- Chowdeck (food delivery in Nigeria)
-- Paystack (payment features)
-- Global FAANG / big banks / tech companies (they love Go + microservices-ready code + cloud)
+**Project Name**: FoodDelivery Backend API  
+**Type**: Monolith (for learning & portfolio) with clean architecture  
+**Goal**: Build a production-grade food delivery backend similar to Chowdeck, Glovo, or Uber Eats.
 
-When you finish, you go deploy am live, put am on GitHub with nice README, and put the link for your CV.
-
----
-
-### 2. Full Features (What the app go do)
-
-**MVP Features (Must build — Core of the project)**  
-1. User registration & login (customers + restaurant admins)  
-2. Restaurant management (create, view, search restaurants)  
-3. Menu management (add categories + food items with price & description)  
-4. Cart system (add/remove items)  
-5. Place order + calculate total  
-6. Paystack payment integration (initialize payment + verify via webhook)  
-7. Order status tracking (Pending → Confirmed → Preparing → Out for Delivery → Delivered)
-
-**Advanced / Stand-out Features (We go add these to impress recruiters)**  
-- Redis caching (fast menu loading)  
-- RabbitMQ background jobs (send order notifications, update status)  
-- Rate limiting (prevent abuse)  
-- JWT authentication with refresh tokens  
-- Basic analytics endpoint (e.g. total orders per restaurant)  
-- Idempotency for payments (no double charging)  
-- Proper error handling & logging  
-- Docker + docker-compose for easy run  
-- Unit + integration tests  
+**Target Users**:
+- Customers (order food)
+- Restaurants / Restaurant Admins
+- Delivery Riders (basic for now)
+- Platform Admin (future)
 
 ---
 
-### 3. Tools & Technologies (Full Tech Stack)
+### 2. Core Features & Functionalities
 
-| Layer              | Technology                          | Why we choose am (for beginner + job value) |
-|--------------------|-------------------------------------|---------------------------------------------|
-| Language           | Golang (Go)                         | You already dey learn am + very fast & scalable |
-| Web Framework      | Gin                                 | Simple, fast, used in many big Go projects |
-| Database           | PostgreSQL + GORM                   | Strong for transactions (payments) |
-| Cache              | Redis                               | Fast lookup for menus & sessions |
-| Message Queue      | RabbitMQ                            | Background tasks (notifications) |
-| Config             | Viper + .env                        | Safe way to handle secrets |
-| Logging            | Zap                                 | Clean logs for production |
-| Auth               | JWT (golang-jwt)                    | Standard for APIs |
-| Payment            | Paystack Go SDK                     | Real Nigerian payment integration |
-| Container          | Docker + Docker Compose             | Shows you know cloud-ready apps |
-| Testing            | Go testing + Testify                | Professional code |
-| API Docs           | Swagger (optional later)            | Easy for recruiters to test your API |
-| Deployment         | Render / Railway / AWS free tier    | Live link on your GitHub |
+#### Customer Features
+- User registration & login (Customer + Restaurant Admin roles)
+- Browse restaurants (search by name, location, cuisine, rating)
+- View restaurant menus with categories
+- Add/remove items to cart
+- Place order + Paystack payment integration
+- Track order status in real-time (Pending → Confirmed → Preparing → Out for Delivery → Delivered)
+- View order history
+
+#### Restaurant Features
+- Restaurant registration & profile management
+- Menu management (categories + food items with price, description, image, availability)
+- View and update order status
+- View restaurant analytics (basic)
+
+#### General Features
+- JWT Authentication + Refresh tokens
+- Rate limiting
+- Input validation
+- Proper error handling & logging
+- Background jobs (order notifications, status updates)
+- Caching (popular menus, restaurant lists)
+- Idempotency for payments
 
 ---
 
-### 4. Project Folder Structure (How we go organize code)
+### 3. Database Models (Entities)
 
-We go use **Clean Architecture** (very common in good Go jobs):
+Here are all the main models you need:
+
+| Model              | Key Fields |
+|--------------------|----------|
+| **User**           | `id`, `email`, `password` (hashed), `full_name`, `phone`, `role` (customer / restaurant_admin / rider / admin), `created_at`, `updated_at` |
+| **Restaurant**     | `id`, `name`, `description`, `address`, `phone`, `image_url`, `rating`, `is_open`, `owner_id` (references User), `created_at` |
+| **Category**       | `id`, `name`, `restaurant_id` |
+| **MenuItem**       | `id`, `name`, `description`, `price`, `image_url`, `is_available`, `category_id`, `restaurant_id` |
+| **Cart**           | `id`, `user_id`, `items` (JSON or separate CartItem table) |
+| **Order**          | `id`, `user_id`, `restaurant_id`, `total_amount`, `status` (pending, confirmed, preparing, out_for_delivery, delivered, cancelled), `delivery_address`, `payment_status`, `created_at`, `updated_at` |
+| **OrderItem**      | `id`, `order_id`, `menu_item_id`, `quantity`, `unit_price` |
+| **Payment**        | `id`, `order_id`, `paystack_reference`, `amount`, `status`, `payment_method` |
+| **Address**        | `id`, `user_id`, `street`, `city`, `state`, `coordinates` (lat, lng) |
+
+**Note**: Start with `User`, `Restaurant`, `MenuItem`, `Order`, `OrderItem`. Add others later.
+
+---
+
+### 4. Architecture (Clean Architecture)
+
+We will use this folder structure:
 
 ```
 food-delivery-backend/
-├── cmd/app/                  ← main.go (start the server)
+├── cmd/
+│   └── app/
+│       └── main.go
 ├── internal/
-│   ├── config/               ← load .env
-│   ├── model/                ← all database structs (User, Order, etc.)
-│   ├── repository/           ← database queries
-│   ├── service/              ← business logic
-│   ├── handler/              ← Gin routes & controllers
-│   ├── middleware/           ← auth, rate limit, logging
-│   ├── queue/                ← RabbitMQ producer & consumer
-│   ├── util/                 ← helpers (JWT, errors, etc.)
-│   └── dto/                  ← request/response structs (optional)
-├── migrations/               ← database table creation
-├── pkg/                      ← reusable packages (if needed)
+│   ├── config/          # Viper config loading
+│   ├── model/           # All database structs (User.go, Order.go, etc.)
+│   ├── dto/             # Request & Response structs (RegisterRequest, OrderResponse, etc.)
+│   ├── repository/      # Database operations (UserRepository, OrderRepository)
+│   ├── service/         # Business logic (UserService, OrderService, PaymentService)
+│   ├── handler/         # Gin HTTP handlers (AuthHandler, OrderHandler)
+│   ├── middleware/      # Auth, RateLimit, Logging, ErrorHandler
+│   ├── queue/           # RabbitMQ producers & consumers
+│   ├── util/            # JWT, ErrorResponse, PasswordHash, etc.
+│   └── router/          # Route definitions
+├── migrations/          # SQL or GORM auto migrations
+├── pkg/                 # Shared utilities (optional)
 ├── docker-compose.yml
 ├── Dockerfile
 ├── .env.example
-├── go.mod
-└── README.md                 ← very important (with diagrams)
+└── README.md
+```
+
+This structure is clean, testable, and looks very professional on GitHub.
+
+---
+
+### 5. Major Endpoints (API Routes)
+
+**Auth**
+- `POST /api/v1/auth/register`
+- `POST /api/v1/auth/login`
+- `POST /api/v1/auth/refresh`
+
+**Restaurants**
+- `GET /api/v1/restaurants` (list with filters)
+- `GET /api/v1/restaurants/:id`
+- `POST /api/v1/restaurants` (restaurant admin only)
+
+**Menu**
+- `GET /api/v1/restaurants/:id/menu`
+- `POST /api/v1/restaurants/:id/menu` (admin)
+
+**Cart**
+- `GET /api/v1/cart`
+- `POST /api/v1/cart/items`
+- `DELETE /api/v1/cart/items/:menu_item_id`
+
+**Orders**
+- `POST /api/v1/orders` (place order + initialize payment)
+- `GET /api/v1/orders`
+- `GET /api/v1/orders/:id`
+- `PATCH /api/v1/orders/:id/status` (restaurant/rider)
+
+**Payments**
+- `POST /api/v1/payments/webhook` (Paystack webhook)
+
+---
+
+### 6. What Data the API Will Provide (Example Responses)
+
+Example Order Response:
+```json
+{
+  "id": "uuid",
+  "user_id": "uuid",
+  "restaurant": { "id": "...", "name": "Mama's Kitchen" },
+  "items": [...],
+  "total_amount": 12500,
+  "status": "preparing",
+  "payment_status": "success",
+  "created_at": "2026-04-16T10:00:00Z"
+}
 ```
 
 ---
 
-### 5. Overall Build Approach (6 Phases)
+### 7. Technologies & Tools
 
-We go build **one phase at a time**, prompt by prompt, very slow.  
-You go write the code yourself after my explanation.  
-When you finish one phase, you say “done” or paste your code + error, then I give next phase.
-
-**Phase 1** (Done already)  
-→ Project setup + Docker + Health check
-
-**Phase 2** (Next one we go start)  
-→ Config (Viper) + Database connection (GORM)
-
-**Phase 3**  
-→ Models (User, Restaurant, MenuItem, Order, etc.)
-
-**Phase 4**  
-→ Authentication (Register + Login with JWT)
-
-**Phase 5**  
-→ Core features (Restaurant, Menu, Cart, Order)
-
-**Phase 6**  
-→ Paystack payment + RabbitMQ background jobs + Redis + Polish + Tests + README + Deploy
+- Language: Go 1.23
+- Framework: Gin
+- ORM: GORM v2
+- Database: PostgreSQL
+- Cache: Redis
+- Queue: RabbitMQ
+- Auth: JWT (golang-jwt)
+- Payment: Paystack Go SDK
+- Logging: Zap
+- Config: Viper
+- Validation: github.com/go-playground/validator
+- Container: Docker + Docker Compose
 
 ---
 
-### 6. How we go work together (Prompt by prompt)
+### Next Step Recommendation
 
-1. I go give you **one small task** (example: “Create config.go and do these 3 things…”)
-2. I go explain **why** + give you thinking guide
-3. You write the code yourself
-4. You reply “done” or paste your code + any error
-5. I check, explain mistakes gently, and give next small task
-6. We repeat until the whole project is finished
+Now that you have the full picture, I recommend we build it **phase by phase**:
 
-No full code copy-paste.  
-You go learn every line.
+**Phase 1** (Setup) — Done  
+**Phase 2** — Config + Database Connection + GORM  
+**Phase 3** — Models (User, Restaurant, MenuItem, Order, etc.)  
+**Phase 4** — Authentication (Register & Login)  
+**Phase 5** — Restaurant + Menu CRUD  
+**Phase 6** — Cart + Order + Payment
 
----
+Would you like me to start giving you the **detailed Phase 2** right now with:
+- Exact `config.go` structure
+- How to connect to PostgreSQL with GORM
+- Migration strategy
 
-**Ready?**
+Or do you want me to explain any section above in more detail first (models, endpoints, etc.)?
 
-Now reply with **one** of these:
+Just say:
+- “Start Phase 2” 
+- or “Explain models more”
+- or “Give me full endpoint list with request/response examples”
 
-- “Start Phase 2 now” → I go give you Task 2.1 immediately  
-- “Explain any part more” → tell me which part you still dey confused about  
-- “I dey ready” → we go begin
+I’m ready when you are. Let’s build this thing properly. 💪
 
-You don see the full map now.  
-No more fear. We go build am small small till e shine.
-
-Oya, tell me wetin you want make we do now. 💪
+What do you want next?

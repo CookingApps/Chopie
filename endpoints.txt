@@ -1,0 +1,213 @@
+Here's a **complete and detailed list** of all the endpoints you should implement for your Food Delivery API.
+
+I’ve organized them properly with:
+- HTTP Method + Route
+- Description
+- Request Body (what the client sends)
+- Response Body (what your API returns)
+- Who can access it (Customer, Restaurant Admin, etc.)
+
+---
+
+### **1. Authentication Endpoints**
+
+| Method | Endpoint                        | Description                          | Access          |
+|--------|---------------------------------|--------------------------------------|-----------------|
+| POST   | `/api/v1/auth/register`        | Register new user                    | Public         |
+| POST   | `/api/v1/auth/login`           | Login user                           | Public         |
+| POST   | `/api/v1/auth/refresh`         | Refresh access token                 | Authenticated  |
+
+**Register Request:**
+```json
+{
+  "full_name": "Ayobami Masterpiece",
+  "email": "ayobami@example.com",
+  "password": "securepassword123",
+  "phone": "08012345678",
+  "role": "customer"          // "customer" or "restaurant_admin"
+}
+```
+
+**Register Response:**
+```json
+{
+  "message": "User registered successfully",
+  "user": {
+    "id": "uuid-here",
+    "full_name": "Ayobami Masterpiece",
+    "email": "ayobami@example.com",
+    "role": "customer"
+  }
+}
+```
+
+**Login Request:**
+```json
+{
+  "email": "ayobami@example.com",
+  "password": "securepassword123"
+}
+```
+
+**Login Response:**
+```json
+{
+  "access_token": "jwt-token-here",
+  "refresh_token": "refresh-jwt-token",
+  "user": { ... }
+}
+```
+
+---
+
+### **2. Restaurant Endpoints**
+
+| Method | Endpoint                              | Description                          | Access                  |
+|--------|---------------------------------------|--------------------------------------|-------------------------|
+| GET    | `/api/v1/restaurants`                | Get list of restaurants (with filters) | Public                 |
+| GET    | `/api/v1/restaurants/:id`            | Get single restaurant                | Public                 |
+| POST   | `/api/v1/restaurants`                | Create new restaurant                | Restaurant Admin only  |
+| PUT    | `/api/v1/restaurants/:id`            | Update restaurant                    | Restaurant Admin only  |
+
+**Get Restaurants Query Params:**
+- `search=`
+- `cuisine=`
+- `min_rating=`
+- `is_open=true`
+
+**Create Restaurant Request:**
+```json
+{
+  "name": "Mama's Kitchen",
+  "description": "Best Nigerian dishes",
+  "address": "123 University Road, Abuja",
+  "phone": "09087654321",
+  "image_url": "https://..."
+}
+```
+
+---
+
+### **3. Menu Endpoints**
+
+| Method | Endpoint                                      | Description                        | Access                  |
+|--------|-----------------------------------------------|------------------------------------|-------------------------|
+| GET    | `/api/v1/restaurants/:restaurant_id/menu`    | Get restaurant menu                | Public                 |
+| POST   | `/api/v1/restaurants/:restaurant_id/menu`    | Add menu item                      | Restaurant Admin       |
+| PUT    | `/api/v1/menu-items/:id`                     | Update menu item                   | Restaurant Admin       |
+| DELETE | `/api/v1/menu-items/:id`                     | Delete menu item                   | Restaurant Admin       |
+
+**Menu Item Request:**
+```json
+{
+  "name": "Jollof Rice & Chicken",
+  "description": "Spicy jollof with grilled chicken",
+  "price": 4500,
+  "image_url": "https://...",
+  "category_id": "uuid"
+}
+```
+
+---
+
+### **4. Cart Endpoints**
+
+| Method | Endpoint                    | Description                  | Access       |
+|--------|-----------------------------|------------------------------|--------------|
+| GET    | `/api/v1/cart`             | Get user's cart              | Authenticated|
+| POST   | `/api/v1/cart/items`       | Add item to cart             | Authenticated|
+| DELETE | `/api/v1/cart/items/:id`   | Remove item from cart        | Authenticated|
+| DELETE | `/api/v1/cart`             | Clear entire cart            | Authenticated|
+
+**Add to Cart Request:**
+```json
+{
+  "menu_item_id": "uuid",
+  "quantity": 2
+}
+```
+
+---
+
+### **5. Order Endpoints** (Most Important)
+
+| Method | Endpoint                        | Description                          | Access                  |
+|--------|---------------------------------|--------------------------------------|-------------------------|
+| POST   | `/api/v1/orders`               | Place new order + init payment       | Authenticated (Customer)|
+| GET    | `/api/v1/orders`               | Get user's order history             | Authenticated           |
+| GET    | `/api/v1/orders/:id`           | Get single order details             | Authenticated           |
+| PATCH  | `/api/v1/orders/:id/status`    | Update order status                  | Restaurant Admin / Rider|
+
+**Place Order Request:**
+```json
+{
+  "restaurant_id": "uuid",
+  "delivery_address": "45 Main Street, Abuja",
+  "items": [
+    {
+      "menu_item_id": "uuid1",
+      "quantity": 2
+    },
+    {
+      "menu_item_id": "uuid2",
+      "quantity": 1
+    }
+  ],
+  "payment_method": "paystack"
+}
+```
+
+**Order Response:**
+```json
+{
+  "id": "uuid",
+  "user_id": "uuid",
+  "restaurant": { "id": "...", "name": "Mama's Kitchen" },
+  "items": [ ... ],
+  "total_amount": 12500,
+  "status": "pending",
+  "payment_status": "pending",
+  "delivery_address": "45 Main Street, Abuja",
+  "created_at": "2026-04-16T10:30:00Z"
+}
+```
+
+---
+
+### **6. Payment Endpoints**
+
+| Method | Endpoint                              | Description                        | Access       |
+|--------|---------------------------------------|------------------------------------|--------------|
+| POST   | `/api/v1/payments/webhook`           | Paystack webhook (very important)  | Public       |
+
+This endpoint will receive payment confirmation from Paystack.
+
+---
+
+### **7. Bonus / Future Endpoints**
+
+- `GET /api/v1/profile` → Get user profile
+- `PUT /api/v1/profile` → Update profile
+- `GET /api/v1/restaurants/:id/reviews`
+- `POST /api/v1/orders/:id/cancel`
+- `GET /api/v1/analytics` (for restaurant admin)
+
+---
+
+**Would you like me to expand any section with full JSON examples?**
+
+I can give you:
+
+1. **Full detailed request + response** for the most important endpoints (Place Order, Register, Login, Get Menu, etc.)
+2. **DTO structs** (Go request/response structs) for all endpoints
+3. **Error response format** (standardized)
+
+Just tell me what you want next:
+
+- “Give me full JSON examples for all major endpoints”
+- “Give me the Go DTO structs for Auth and Order”
+- “Start building Phase 2 (Config + Database)”
+
+Which one do you want me to give you right now?  
+
+I'm ready to go deep on whichever part you choose.
